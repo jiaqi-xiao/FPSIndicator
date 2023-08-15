@@ -1,13 +1,15 @@
-ifdef SIMULATOR
-export TARGET = simulator:clang:latest:8.0
-else
+# ifdef SIMULATOR
+# export TARGET = simulator:clang:latest:8.0
+# else
+# export TARGET = iphone:clang:latest:7.0
+# 	ifeq ($(debug),0)
+# 		export ARCHS = armv7 arm64 arm64e
+# 	else
+# 		export ARCHS = arm64 arm64e
+# 	endif
+# endif
 export TARGET = iphone:clang:latest:7.0
-	ifeq ($(debug),0)
-		export ARCHS = armv7 arm64 arm64e
-	else
-		export ARCHS = arm64 arm64e
-	endif
-endif
+export ARCHS = arm64 arm64e
 
 TWEAK_NAME = FPSIndicator
 
