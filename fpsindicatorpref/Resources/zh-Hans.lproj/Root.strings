@@ -14,5 +14,6 @@
 "FPS_TYPE"="计算方法";
 "FPS"="平均";
 "PFPS"="每秒";
+"RFPS"="GPU渲染帧率";
 
 "TEXT_COLOR"="文字颜色";

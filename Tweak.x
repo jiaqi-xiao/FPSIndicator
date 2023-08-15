@@ -2,11 +2,14 @@
 #import <substrate.h>
 #import <libcolorpicker.h>
 #import <objc/runtime.h>
+#include <dlfcn.h>
+
 
 
 enum FPSMode{
 	kModeAverage=1,
-	kModePerSecond
+	kModePerSecond,
+	kModeRenderFrame,
 };
 
 static BOOL enabled;
@@ -39,6 +42,7 @@ static BOOL isEnabledApp(){
 
 double FPSavg = 0;
 double FPSPerSecond = 0;
+double RenderFPS = 0;
 
 static void startRefreshTimer(){
 	_timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
@@ -52,14 +56,53 @@ static void startRefreshTimer(){
 		    case kModePerSecond:
 		    	[fpsLabel setText:[NSString stringWithFormat:@"%.1lf",FPSPerSecond]];
 		    	break;
+			case kModeRenderFrame:
+				[fpsLabel setText:[NSString stringWithFormat:@"%.1lf",RenderFPS]];
+				break;
 		    default:
 		    	break;
     	}
 
-    	NSLog(@"%.1lf %.1lf",FPSavg,FPSPerSecond);
+    	NSLog(@"%.1lf %.1lf %.1lf",FPSavg,FPSPerSecond,RenderFPS);
 
     });
     dispatch_resume(_timer); 
+}
+
+static void startUpdateRenderFPS(){
+	//CARenderServer渲染帧率
+	NSInteger (*origin_CARenderServerGetFrameCounter)(int) = NULL;
+
+
+	void *handle = dlopen("/System/Library/Frameworks/QuartzCore.framework/QuartzCore", RTLD_NOW);
+	origin_CARenderServerGetFrameCounter = dlsym(handle, "CARenderServerGetFrameCounter");
+	if (origin_CARenderServerGetFrameCounter == NULL) {
+		return;
+	}
+	static NSInteger AppFrameCounter = 0;
+	static NSTimeInterval AppRenderTime = 0;
+	static NSTimer *renderTimer = nil;
+	if (renderTimer) {
+		return;
+	}
+	renderTimer = [NSTimer timerWithTimeInterval:0.2 repeats:YES block:^(NSTimer * _Nonnull timer) {
+		NSInteger frameCounter = origin_CARenderServerGetFrameCounter(0);
+		if (AppFrameCounter == 0) {
+			AppFrameCounter = frameCounter;
+		} else {
+			NSInteger renderFrameCount = frameCounter - AppFrameCounter;
+			AppFrameCounter = frameCounter;
+			NSTimeInterval currentTime = CACurrentMediaTime();
+			if (AppRenderTime > 0) {
+				NSInteger fps = floor(renderFrameCount / (currentTime - AppRenderTime));
+				// renderFPSLabel.text = [NSString stringWithFormat:@"渲染FPS:%ld", (long)fps];
+				RenderFPS = fps;
+			}
+			AppRenderTime = CACurrentMediaTime();
+		}
+	}];
+	[[NSRunLoop mainRunLoop] addTimer:renderTimer forMode:NSRunLoopCommonModes];
+	return;
 }
 
 #pragma mark ui
@@ -89,7 +132,9 @@ static void startRefreshTimer(){
         
         [self addSubview:fpsLabel];
         loadPref();
+		startUpdateRenderFPS();
         startRefreshTimer();
+		
     });
 	return %orig;
 }

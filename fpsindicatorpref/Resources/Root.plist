@@ -24,7 +24,6 @@
 			<key>PostNotification</key>
 			<string>com.brend0n.fpsindicator/loadPref</string>
 		</dict>
-
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
@@ -60,7 +59,6 @@
 			<key>PostNotification</key>
 			<string>com.brend0n.fpsindicator/loadPref</string>
 		</dict>
-
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
@@ -84,23 +82,23 @@
 			<array>
 				<string>FPS</string>
 				<string>PFPS</string>
+				<string>RFPS</string>
 			</array>
 			<key>validValues</key>
 			<array>
 				<integer>1</integer>
 				<integer>2</integer>
+				<integer>3</integer>
 			</array>
 			<key>PostNotification</key>
 			<string>com.brend0n.fpsindicator/loadPref</string>
 		</dict>
-		
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
 			<string>DESCRIPTION</string>
 		</dict>
-
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
